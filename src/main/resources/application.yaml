@@ -20,3 +20,4 @@ app:
     database: "$DB_NAME:warehouse"
     user: "$DB_USER:postgres"
     password: "$DB_PASSWORD:postgres"
+    seed: "$SEED_DB:true"

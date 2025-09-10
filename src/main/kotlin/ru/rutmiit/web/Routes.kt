@@ -4,6 +4,7 @@ import com.eventstore.dbclient.AppendToStreamOptions
 import com.eventstore.dbclient.EventData
 import com.eventstore.dbclient.ExpectedRevision
 import com.eventstore.dbclient.ReadStreamOptions
+import com.eventstore.dbclient.StreamNotFoundException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.HttpStatusCode
@@ -15,6 +16,7 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import org.koin.ktor.ext.get
 
 import ru.rutmiit.web.dto.ProductDto
 import ru.rutmiit.data.WarehouseRepository
@@ -27,7 +29,8 @@ import java.util.UUID
 
 fun Route.orderRoutes(
     client: EventStoreCoroutineClient,
-    projections: Projections
+    projections: Projections,
+    objectMapper: ObjectMapper
 ) {
     route("/orders") {
         post {
@@ -37,9 +40,9 @@ fun Route.orderRoutes(
             if (product != null && product.quantityInStock >= command.quantity) {
                 val orderPlacedEvent = OrderPlacedEvent(command.productId, command.quantity)
                 val eventData = EventData.builderAsJson(
-                    UUID.randomUUID(),
+                    orderPlacedEvent.eventId,
                     orderPlacedEvent::class.java.simpleName,
-                    orderPlacedEvent
+                    objectMapper.writeValueAsBytes(orderPlacedEvent)
                 ).build()
 
                 client.appendToStream(
@@ -62,8 +65,8 @@ fun Route.productRoutes(
 ) {
     route("/products") {
         get {
-            val products = repository.findAll().map { 
-                ProductDto(it.id.value, it.name, it.quantityInStock) 
+            val products = repository.findAll().map {
+                ProductDto(it.id.value, it.name, it.quantityInStock)
             }
             call.respond(products)
         }
@@ -73,10 +76,13 @@ fun Route.productRoutes(
             val events = client.readStreamFlow(
                 stream = "product-$productId",
                 options = ReadStreamOptions.get().fromStart()
-            ).onlyEvents()
+            )
+                .onlyEvents()
                 .map {
                     val eventData = it.event.eventData
-                    objectMapper.readValue<OrderPlacedEvent>(eventData)
+                    objectMapper.runCatching {
+                        readValue<OrderPlacedEvent>(eventData)
+                    }.getOrNull()
                 }.toList()
 
             call.respond(events)

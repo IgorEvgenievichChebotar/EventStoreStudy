@@ -9,7 +9,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.serialization.jackson.*
+import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
@@ -20,6 +20,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
 import org.koin.ktor.plugin.Koin
+import ru.rutmiit.data.DatabaseSeeder
 import ru.rutmiit.data.Products
 import ru.rutmiit.data.WarehouseRepository
 import ru.rutmiit.service.Projections
@@ -35,7 +36,13 @@ fun main(args: Array<String>): Unit = EngineMain.main(args)
 // Точка входа для Ktor, указанная в application.yaml
 @Suppress("unused")
 fun Application.module() {
-    configureSerialization()
+    install(ContentNegotiation) {
+        jackson {
+            registerModule(JavaTimeModule())
+            disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        }
+    }
+
     configureDI()
     configureRouting()
 
@@ -56,7 +63,7 @@ fun Application.configureRouting() {
     val objectMapper by inject<ObjectMapper>()
 
     routing {
-        orderRoutes(client, projections)
+        orderRoutes(client, projections, objectMapper)
         productRoutes(client, repository, objectMapper)
     }
 }
@@ -66,10 +73,9 @@ fun Application.configureDI() = install(Koin) {
 
     modules(module {
         single<ObjectMapper> {
-            jacksonObjectMapper().apply {
-                registerModule(JavaTimeModule())
-                disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            }
+            jacksonObjectMapper()
+                .registerModule(JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         }
 
         // EventStoreDB из конфига
@@ -98,9 +104,12 @@ fun Application.configureDI() = install(Koin) {
                 maximumPoolSize = 10
             }
             val dataSource = HikariDataSource(hikariConfig)
-            Database.connect(dataSource).also {
-                transaction(it) {
+            Database.connect(dataSource).also { db ->
+                transaction(db) {
                     SchemaUtils.create(Products)
+                    if (cfg.propertyOrNull("app.db.seed")?.getString()?.toBoolean() == true) {
+                        DatabaseSeeder.seed(db)
+                    }
                 }
             }
         }
@@ -109,11 +118,4 @@ fun Application.configureDI() = install(Koin) {
         single { WarehouseRepository(get()) }
         single { Projections(get(), get(), get()) }
     })
-}
-
-fun Application.configureSerialization() = install(ContentNegotiation) {
-    jackson {
-        registerModule(JavaTimeModule())
-        disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-    }
 }

@@ -11,7 +11,7 @@ val ktorVersion = "3.1.2"
 val coroutinesVersion = "1.10.2"
 val kotlinLoggingVersion = "7.0.7"
 val logbackVersion = "1.5.18"
-val jacksonVersion = "2.19.0"
+val jacksonVersion = "2.20.0"
 val koinVersion = "4.0.4"
 val r2dbcPostgresqlVersion = "1.0.7.RELEASE"
 val r2dbcPoolVersion = "1.0.2.RELEASE"
@@ -23,6 +23,7 @@ val eventStoreVersion = "5.4.5"
 val jacksonModuleKotlinVersion = "2.20.0"
 val exposedVersion = "0.41.1"
 val hikariVersion = "5.0.1"
+val postgresqlVersion = "42.6.0"
 
 
 repositories {
@@ -60,7 +61,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
-    implementation("org.postgresql:postgresql:42.6.0")
+    implementation("org.postgresql:postgresql:$postgresqlVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
 
     // Logging
