@@ -6,17 +6,21 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.routing.*
-import io.r2dbc.spi.ConnectionFactories
-import io.r2dbc.spi.ConnectionFactoryOptions
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
 import org.koin.ktor.plugin.Koin
+import ru.rutmiit.data.Products
 import ru.rutmiit.data.WarehouseRepository
 import ru.rutmiit.service.Projections
 import ru.rutmiit.util.EventStoreCoroutineClient
@@ -81,19 +85,27 @@ fun Application.configureDI() = install(Koin) {
             ).asCoroutines()
         }
 
-        // R2DBC ConnectionFactory из конфига
+        // Exposed Database
         single {
-            val options = ConnectionFactoryOptions.builder()
-                .option(ConnectionFactoryOptions.DRIVER, cfg.property("app.db.driver").getString())
-                .option(ConnectionFactoryOptions.HOST, cfg.property("app.db.host").getString())
-                .option(ConnectionFactoryOptions.PORT, cfg.property("app.db.port").getString().toInt())
-                .option(ConnectionFactoryOptions.DATABASE, cfg.property("app.db.database").getString())
-                .option(ConnectionFactoryOptions.USER, cfg.property("app.db.user").getString())
-                .option(ConnectionFactoryOptions.PASSWORD, cfg.property("app.db.password").getString())
-                .build()
-            ConnectionFactories.get(options)
+            val hikariConfig = HikariConfig().apply {
+                val host = cfg.property("app.db.host").getString()
+                val port = cfg.property("app.db.port").getString().toInt()
+                val database = cfg.property("app.db.database").getString()
+                jdbcUrl = "jdbc:postgresql://$host:$port/$database"
+                driverClassName = "org.postgresql.Driver"
+                username = cfg.property("app.db.user").getString()
+                password = cfg.property("app.db.password").getString()
+                maximumPoolSize = 10
+            }
+            val dataSource = HikariDataSource(hikariConfig)
+            Database.connect(dataSource).also {
+                transaction(it) {
+                    SchemaUtils.create(Products)
+                }
+            }
         }
 
+        // WarehouseRepository
         single { WarehouseRepository(get()) }
         single { Projections(get(), get(), get()) }
     })

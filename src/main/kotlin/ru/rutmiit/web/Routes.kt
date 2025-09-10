@@ -15,6 +15,8 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+
+import ru.rutmiit.web.dto.ProductDto
 import ru.rutmiit.data.WarehouseRepository
 import ru.rutmiit.event.OrderPlacedEvent
 import ru.rutmiit.service.Projections
@@ -60,7 +62,9 @@ fun Route.productRoutes(
 ) {
     route("/products") {
         get {
-            val products = repository.findAll().toList()
+            val products = repository.findAll().map { 
+                ProductDto(it.id.value, it.name, it.quantityInStock) 
+            }
             call.respond(products)
         }
 

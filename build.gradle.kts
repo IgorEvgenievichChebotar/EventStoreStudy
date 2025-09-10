@@ -21,6 +21,8 @@ val springWebfluxVersion = "6.2.6"
 val dotenvVersion = "6.5.1"
 val eventStoreVersion = "5.4.5"
 val jacksonModuleKotlinVersion = "2.20.0"
+val exposedVersion = "0.41.1"
+val hikariVersion = "5.0.1"
 
 
 repositories {
@@ -54,12 +56,12 @@ dependencies {
     implementation("io.insert-koin:koin-core:$koinVersion")
     implementation("io.insert-koin:koin-ktor:$koinVersion")
 
-    // Database - R2DBC
-    implementation("io.r2dbc:r2dbc-pool:$r2dbcPoolVersion")
-    implementation("io.r2dbc:r2dbc-proxy:$r2dbcProxyVersion")
-    implementation("org.postgresql:r2dbc-postgresql:$r2dbcPostgresqlVersion")
-    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc:$springR2dbcVersion")
-    implementation("org.springframework:spring-webflux:${springWebfluxVersion}")
+    // Exposed ORM
+    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    implementation("org.postgresql:postgresql:42.6.0")
+    implementation("com.zaxxer:HikariCP:$hikariVersion")
 
     // Logging
     implementation("io.github.oshai:kotlin-logging-jvm:$kotlinLoggingVersion")
