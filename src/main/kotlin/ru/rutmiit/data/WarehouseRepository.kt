@@ -1,0 +1,39 @@
+package ru.rutmiit.data
+
+import io.r2dbc.spi.ConnectionFactory
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactive.awaitSingle
+import org.springframework.r2dbc.core.DatabaseClient
+import org.springframework.r2dbc.core.flow
+import ru.rutmiit.data.Product
+import java.util.UUID
+
+class WarehouseRepository(private val connectionFactory: ConnectionFactory) {
+    private val client: DatabaseClient = DatabaseClient.create(connectionFactory)
+
+    suspend fun findById(id: UUID): Product? {
+        return client.sql("SELECT * FROM products WHERE id = :id")
+            .bind("id", id)
+            .map { row ->
+                Product(
+                    id = row.get("id", UUID::class.java)!!,
+                    quantityInStock = row.get("quantity_in_stock", Integer::class.java)!!.toInt()
+                )
+            }
+            .one()
+            .awaitSingle()
+    }
+
+    fun findAll(): Flow<Product> {
+        return client.sql("SELECT * FROM products")
+            .map { row ->
+                Product(
+                    id = row.get("id", UUID::class.java)!!,
+                    quantityInStock = row.get("quantity_in_stock", Integer::class.java)!!.toInt()
+                )
+            }
+            .flow()
+    }
+}

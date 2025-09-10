@@ -1,2 +1,22 @@
-eventstore:
-  connection-string: esdb://localhost:2111,localhost:2112,localhost:2113?tls=true&tlsVerifyCert=false
+ktor:
+  development: true
+  deployment:
+    host: "0.0.0.0"
+    port: "$PORT:8080"     # можно переопределить через переменную окружения PORT
+  application:
+    modules:
+      - ru.rutmiit.MainKt.module   # ВАЖНО: имя файла с module() => <FileName>Kt
+
+app:
+  eventstore:
+    host: "$ES_HOST:localhost"
+    port: "$ES_PORT:2113"
+    tls: "$ES_TLS:false"
+
+  db:
+    driver: "postgresql"
+    host: "$DB_HOST:localhost"
+    port: "$DB_PORT:5432"
+    database: "$DB_NAME:warehouse"
+    user: "$DB_USER:postgres"
+    password: "$DB_PASSWORD:postgres"

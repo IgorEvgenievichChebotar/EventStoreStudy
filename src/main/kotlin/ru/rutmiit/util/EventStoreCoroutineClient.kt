@@ -77,10 +77,6 @@ class EventStoreCoroutineClient(private val client: EventStoreDBClient) {
         options ?: ReadAllOptions.get()
     ).asFlow()
 
-    /** Утилита: оставить только события. */
-    fun Flow<ReadMessage>.onlyEvents(): Flow<ResolvedEvent> =
-        mapNotNull { if (it.hasEvent()) it.event else null }
-
     /* ========== Подписки -> Flow<ResolvedEvent> ========== */
 
     /**
@@ -157,6 +153,12 @@ class EventStoreCoroutineClient(private val client: EventStoreDBClient) {
             runCatching { subFuture.getNow(null)?.let(onStop) }
         }
     }.buffer(buffer)
+
+    companion object {
+        /** Утилита: оставить только события. */
+        fun Flow<ReadMessage>.onlyEvents(): Flow<ResolvedEvent> =
+            mapNotNull { if (it.hasEvent()) it.event else null }
+    }
 }
 
 /** Удобный extension, чтобы быстро получить корутинный фасад. */
