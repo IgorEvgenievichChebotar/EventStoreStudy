@@ -8,6 +8,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.map
 import ru.rutmiit.data.Product
 import ru.rutmiit.data.WarehouseRepository
+import ru.rutmiit.event.OrderCancelledEvent
 import ru.rutmiit.event.OrderPlacedEvent
 import ru.rutmiit.util.EventStoreCoroutineClient
 import ru.rutmiit.util.EventStoreCoroutineClient.Companion.onlyEvents
@@ -29,7 +30,11 @@ class Projections(
                 options = ReadStreamOptions.get().fromStart().forwards()
             ).onlyEvents().map {
                 val eventData = it.event.eventData
-                objectMapper.readValue<OrderPlacedEvent>(eventData)
+                when (it.event.eventType) {
+                    OrderPlacedEvent::class.simpleName -> objectMapper.readValue<OrderPlacedEvent>(eventData)
+                    OrderCancelledEvent::class.simpleName -> objectMapper.readValue<OrderCancelledEvent>(eventData)
+                    else -> error("Unexpected event type: ${it.event.eventType}")
+                }
             }
         } catch (e: StreamNotFoundException) {
             logger.error(e) { "Ошибка получения событий для продукта" }

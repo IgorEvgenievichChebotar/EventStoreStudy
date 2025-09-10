@@ -13,10 +13,12 @@ import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import ru.rutmiit.data.WarehouseRepository
+import ru.rutmiit.event.OrderCancelledEvent
 import ru.rutmiit.event.OrderPlacedEvent
 import ru.rutmiit.service.Projections
 import ru.rutmiit.util.EventStoreCoroutineClient
 import ru.rutmiit.util.EventStoreCoroutineClient.Companion.onlyEvents
+import ru.rutmiit.web.dto.CancelOrderCommand
 import ru.rutmiit.web.dto.PlaceOrderCommand
 import ru.rutmiit.web.dto.ProductDto
 import java.util.*
@@ -35,7 +37,7 @@ fun Route.orderRoutes(
                 val orderPlacedEvent = OrderPlacedEvent(command.productId, command.quantity)
                 val eventData = EventData.builderAsJson(
                     orderPlacedEvent.eventId,
-                    orderPlacedEvent::class.java.simpleName,
+                    orderPlacedEvent::class.simpleName,
                     objectMapper.writeValueAsBytes(orderPlacedEvent),
                 ).build()
 
@@ -48,6 +50,20 @@ fun Route.orderRoutes(
             } else {
                 call.respond(HttpStatusCode.BadRequest, "Insufficient stock.")
             }
+        }
+        post("/cancel") {
+            val command = call.receive<CancelOrderCommand>()
+            val orderCancelledEvent = OrderCancelledEvent(command.productId, command.quantity)
+            val eventData = EventData.builderAsJson(
+                orderCancelledEvent.eventId,
+                orderCancelledEvent::class.simpleName,
+                objectMapper.writeValueAsBytes(orderCancelledEvent),
+            ).build()
+            client.appendToStream(
+                stream = "product-${command.productId}",
+                options = AppendToStreamOptions.get().expectedRevision(ExpectedRevision.any()),
+                eventData
+            )
         }
     }
 }
