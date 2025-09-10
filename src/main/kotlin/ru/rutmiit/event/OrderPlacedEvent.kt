@@ -1,8 +1,8 @@
 package ru.rutmiit.event
 
-import java.util.UUID
+import java.util.*
 
 class OrderPlacedEvent(
     val productId: UUID,
     val quantity: Int
-) : Event
+) : Event()

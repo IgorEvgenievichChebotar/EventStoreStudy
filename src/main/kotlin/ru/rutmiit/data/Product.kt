@@ -4,9 +4,9 @@ import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.UUIDTable
-import org.jetbrains.exposed.sql.transactions.transaction
 import ru.rutmiit.event.OrderPlacedEvent
-import java.util.UUID
+import ru.rutmiit.web.dto.ProductDto
+import java.util.*
 
 object Products : UUIDTable() {
     val name = varchar("name", 50)

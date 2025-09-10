@@ -1,15 +1,15 @@
 package ru.rutmiit.data
 
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.Database
-import java.util.UUID
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import java.util.*
 
 class WarehouseRepository(private val db: Database) {
-    fun findById(id: UUID): Product? = transaction(db) {
+    suspend fun findById(id: UUID): Product? = newSuspendedTransaction(db = db) {
         Product.findById(id)
     }
 
-    fun findAll(): List<Product> = transaction(db) {
+    suspend fun findAll(): List<Product> = newSuspendedTransaction(db = db) {
         Product.all().toList()
     }
 }

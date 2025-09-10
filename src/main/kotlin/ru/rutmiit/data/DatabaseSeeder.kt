@@ -3,7 +3,7 @@ package ru.rutmiit.data
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.util.UUID
+import java.util.*
 
 object DatabaseSeeder {
     fun seed(database: Database) {

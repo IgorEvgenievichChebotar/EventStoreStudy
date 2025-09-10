@@ -1,3 +1,3 @@
 package ru.rutmiit.event
 
-interface DomainEvent : Event
+abstract class DomainEvent : Event()

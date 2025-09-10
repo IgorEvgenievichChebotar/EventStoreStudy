@@ -1,19 +1,19 @@
 package ru.rutmiit.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.eventstore.dbclient.ReadStreamOptions
 import com.eventstore.dbclient.StreamNotFoundException
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.toList
+import org.jetbrains.exposed.dao.EntityClass
 import ru.rutmiit.data.Product
 import ru.rutmiit.data.WarehouseRepository
 import ru.rutmiit.event.OrderPlacedEvent
 import ru.rutmiit.util.EventStoreCoroutineClient
 import ru.rutmiit.util.EventStoreCoroutineClient.Companion.onlyEvents
-import java.util.UUID
+import ru.rutmiit.web.dto.ProductDto
+import java.util.*
 
 class Projections(
     private val client: EventStoreCoroutineClient,
@@ -33,9 +33,7 @@ class Projections(
 
             events.mapNotNull {
                 val eventData = it.event.eventData
-                objectMapper.runCatching {
-                    readValue<OrderPlacedEvent>(eventData)
-                }.getOrNull()
+                objectMapper.readValue<OrderPlacedEvent>(eventData)
             }.collect { event ->
                 product.apply(event)
             }

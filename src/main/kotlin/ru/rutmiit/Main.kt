@@ -28,6 +28,7 @@ import ru.rutmiit.util.EventStoreCoroutineClient
 import ru.rutmiit.util.asCoroutines
 import ru.rutmiit.web.orderRoutes
 import ru.rutmiit.web.productRoutes
+import java.util.*
 
 private val logger = KotlinLogging.logger { }
 
@@ -60,11 +61,11 @@ fun Application.configureRouting() {
     val client by inject<EventStoreCoroutineClient>()
     val projections by inject<Projections>()
     val repository by inject<WarehouseRepository>()
-    val objectMapper by inject<ObjectMapper>()
+    val mapper by inject<ObjectMapper>()
 
     routing {
-        orderRoutes(client, projections, objectMapper)
-        productRoutes(client, repository, objectMapper)
+        orderRoutes(client, projections, mapper)
+        productRoutes(client, repository, mapper)
     }
 }
 
