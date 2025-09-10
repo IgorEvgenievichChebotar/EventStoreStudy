@@ -5,7 +5,6 @@ import com.eventstore.dbclient.StreamNotFoundException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.mapNotNull
 import ru.rutmiit.data.Product
 import ru.rutmiit.data.WarehouseRepository

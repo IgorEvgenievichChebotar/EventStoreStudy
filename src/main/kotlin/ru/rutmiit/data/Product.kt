@@ -1,7 +1,7 @@
 package ru.rutmiit.data
 
 import ru.rutmiit.event.OrderPlacedEvent
-import java.util.UUID
+import java.util.*
 
 data class Product(
     val id: UUID,

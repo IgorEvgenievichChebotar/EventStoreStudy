@@ -1,7 +1,6 @@
 package ru.rutmiit.event
 
 import java.time.Instant
-import java.time.LocalDateTime
 import java.util.*
 
 abstract class Event {
