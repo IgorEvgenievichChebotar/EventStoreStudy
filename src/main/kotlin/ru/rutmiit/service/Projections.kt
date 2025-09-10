@@ -5,14 +5,13 @@ import com.eventstore.dbclient.StreamNotFoundException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.mapNotNull
-import org.jetbrains.exposed.dao.EntityClass
 import ru.rutmiit.data.Product
 import ru.rutmiit.data.WarehouseRepository
 import ru.rutmiit.event.OrderPlacedEvent
 import ru.rutmiit.util.EventStoreCoroutineClient
 import ru.rutmiit.util.EventStoreCoroutineClient.Companion.onlyEvents
-import ru.rutmiit.web.dto.ProductDto
 import java.util.*
 
 class Projections(

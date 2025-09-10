@@ -60,7 +60,7 @@ fun Route.productRoutes(
     route("/products") {
         get {
             val products = repository.findAll().map {
-                ProductDto(it.id.value, it.name, it.quantityInStock)
+                ProductDto(it.id, it.quantityInStock)
             }
             call.respond(products)
         }

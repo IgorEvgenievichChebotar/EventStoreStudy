@@ -1,15 +1,39 @@
 package ru.rutmiit.data
 
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import java.util.*
+import io.r2dbc.spi.ConnectionFactory
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactive.awaitSingle
+import org.springframework.r2dbc.core.DatabaseClient
+import org.springframework.r2dbc.core.flow
+import ru.rutmiit.data.Product
+import java.util.UUID
 
-class WarehouseRepository(private val db: Database) {
-    suspend fun findById(id: UUID): Product? = newSuspendedTransaction(db = db) {
-        Product.findById(id)
+class WarehouseRepository(connectionFactory: ConnectionFactory) {
+    private val client: DatabaseClient = DatabaseClient.create(connectionFactory)
+
+    suspend fun findById(id: UUID): Product? {
+        return client.sql("SELECT * FROM products WHERE id = :id")
+            .bind("id", id)
+            .map { row ->
+                Product(
+                    id = row["id"] as UUID,
+                    quantityInStock = row["quantity_in_stock"] as Int
+                )
+            }
+            .one()
+            .awaitSingle()
     }
 
-    suspend fun findAll(): List<Product> = newSuspendedTransaction(db = db) {
-        Product.all().toList()
+    fun findAll(): Flow<Product> {
+        return client.sql("SELECT * FROM products")
+            .map { row ->
+                Product(
+                    id = row["id"] as UUID,
+                    quantityInStock = row["quantity_in_stock"] as Int
+                )
+            }
+            .flow()
     }
 }
