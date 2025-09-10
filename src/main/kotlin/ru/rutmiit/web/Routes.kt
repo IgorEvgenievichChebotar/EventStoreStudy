@@ -106,7 +106,6 @@ fun Route.productRoutes(
                 .onlyEvents()
                 .map { it.event }
                 .toList()
-                .sortedByDescending { it.created }
 
             call.respond(events)
         }
