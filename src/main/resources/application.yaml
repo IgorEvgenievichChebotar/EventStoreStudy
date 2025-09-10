@@ -1,0 +1,2 @@
+eventstore:
+  connection-string: esdb://localhost:2111,localhost:2112,localhost:2113?tls=true&tlsVerifyCert=false
