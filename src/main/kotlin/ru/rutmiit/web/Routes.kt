@@ -5,7 +5,6 @@ import com.eventstore.dbclient.EventData
 import com.eventstore.dbclient.ExpectedRevision
 import com.eventstore.dbclient.ReadStreamOptions
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -64,6 +63,7 @@ fun Route.orderRoutes(
                 options = AppendToStreamOptions.get().expectedRevision(ExpectedRevision.any()),
                 eventData
             )
+            call.respond(HttpStatusCode.OK, "Order cancelled successfully.")
         }
     }
 }
@@ -88,10 +88,9 @@ fun Route.productRoutes(
                 options = ReadStreamOptions.get().fromStart()
             )
                 .onlyEvents()
-                .map {
-                    val eventData = it.event.eventData
-                    objectMapper.readValue<OrderPlacedEvent>(eventData)
-                }.toList()
+                .map { it.event }
+                .toList()
+                .sortedByDescending { it.created }
 
             call.respond(events)
         }

@@ -23,5 +23,4 @@ abstract class Event {
     override fun hashCode(): Int {
         return eventId?.hashCode() ?: 0
     }
-
 }
