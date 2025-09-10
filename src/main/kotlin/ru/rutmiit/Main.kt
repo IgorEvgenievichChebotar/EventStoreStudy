@@ -47,10 +47,15 @@ fun Application.module() {
     }
 }
 
-fun Application.configureSerialization() = install(ContentNegotiation) {
-    jackson {
-        registerModule(JavaTimeModule())
-        disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+fun Application.configureRouting() {
+    val client by inject<EventStoreCoroutineClient>()
+    val projections by inject<Projections>()
+    val repository by inject<WarehouseRepository>()
+    val objectMapper by inject<ObjectMapper>()
+
+    routing {
+        orderRoutes(client, projections)
+        productRoutes(client, repository, objectMapper)
     }
 }
 
@@ -96,14 +101,9 @@ fun Application.configureDI() = install(Koin) {
     })
 }
 
-fun Application.configureRouting() {
-    val client by inject<EventStoreCoroutineClient>()
-    val projections by inject<Projections>()
-    val repository by inject<WarehouseRepository>()
-    val objectMapper by inject<ObjectMapper>()
-
-    routing {
-        orderRoutes(client, projections)
-        productRoutes(client, repository, objectMapper)
+fun Application.configureSerialization() = install(ContentNegotiation) {
+    jackson {
+        registerModule(JavaTimeModule())
+        disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     }
 }
