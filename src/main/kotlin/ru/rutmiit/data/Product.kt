@@ -20,12 +20,10 @@ class Product(id: EntityID<UUID>) : UUIDEntity(id) {
     var quantityInStock by Products.quantityInStock
 
     fun apply(event: OrderPlacedEvent) {
-        transaction {
-            if (quantityInStock >= event.quantity) {
-                quantityInStock -= event.quantity
-            } else {
-                throw InvalidOperationException("Insufficient stock.")
-            }
+        if (quantityInStock >= event.quantity) {
+            quantityInStock -= event.quantity
+        } else {
+            throw InvalidOperationException("Insufficient stock.")
         }
     }
 }
