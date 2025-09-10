@@ -1,15 +1,12 @@
 package ru.rutmiit.data
 
-import io.r2dbc.spi.ConnectionFactory
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.r2dbc.core.flow
 import java.util.*
 
-class WarehouseRepository(connectionFactory: ConnectionFactory) {
-    private val client: DatabaseClient = DatabaseClient.create(connectionFactory)
-
+class WarehouseRepository(private val client: DatabaseClient) {
     suspend fun findById(id: UUID): Product? {
         return client.sql("SELECT * FROM products WHERE id = :id")
             .bind("id", id)
@@ -20,7 +17,7 @@ class WarehouseRepository(connectionFactory: ConnectionFactory) {
                 )
             }
             .one()
-            .awaitSingle()
+            .awaitSingleOrNull()
     }
 
     fun findAll(): Flow<Product> {

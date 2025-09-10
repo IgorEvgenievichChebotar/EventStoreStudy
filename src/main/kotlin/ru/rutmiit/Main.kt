@@ -14,9 +14,12 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.routing.*
 import io.r2dbc.spi.ConnectionFactories
 import io.r2dbc.spi.ConnectionFactoryOptions
+import kotlinx.coroutines.runBlocking
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
 import org.koin.ktor.plugin.Koin
+import org.springframework.r2dbc.core.DatabaseClient
+import ru.rutmiit.data.DbUtils
 import ru.rutmiit.data.WarehouseRepository
 import ru.rutmiit.service.Projections
 import ru.rutmiit.util.EventStoreCoroutineClient
@@ -96,7 +99,17 @@ fun Application.configureDI() = install(Koin) {
                 .option(ConnectionFactoryOptions.USER, cfg.property("app.db.user").getString())
                 .option(ConnectionFactoryOptions.PASSWORD, cfg.property("app.db.password").getString())
                 .build()
-            ConnectionFactories.get(options)
+            val connectionFactory = ConnectionFactories.get(options)
+            DatabaseClient.create(connectionFactory).also {
+                val migrate = { runBlocking { DbUtils(it).migrate() } }
+                val seed = { runBlocking { DbUtils(it).seed() } }
+                if (cfg.propertyOrNull("app.db.migrate")?.getString()?.toBooleanStrictOrNull() ?: false) {
+                    migrate()
+                }
+                if (cfg.propertyOrNull("app.db.seed")?.getString()?.toBooleanStrictOrNull() ?: false) {
+                    seed()
+                }
+            }
         }
 
         // WarehouseRepository

@@ -20,4 +20,5 @@ app:
     database: "$DB_NAME:warehouse"
     user: "$DB_USER:postgres"
     password: "$DB_PASSWORD:postgres"
+    migrate: "$MIGRATE_DB:true"
     seed: "$SEED_DB:true"
