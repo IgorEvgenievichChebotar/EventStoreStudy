@@ -21,3 +21,12 @@ Content-Type: application/json
   "productId": "c3d4b7e4-9e6a-4b1e-8b0a-2e9d8c4f6a2d",
   "quantity": 1
 }
+
+### Restock a product
+POST http://localhost:8080/orders/restock
+Content-Type: application/json
+
+{
+  "productId": "c3d4b7e4-9e6a-4b1e-8b0a-2e9d8c4f6a2d",
+  "quantity": 10
+}

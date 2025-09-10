@@ -3,6 +3,7 @@ package ru.rutmiit.data
 import ru.rutmiit.event.Event
 import ru.rutmiit.event.OrderCancelledEvent
 import ru.rutmiit.event.OrderPlacedEvent
+import ru.rutmiit.event.ProductRestockedEvent
 import java.util.*
 
 data class Product(
@@ -20,6 +21,10 @@ data class Product(
             }
 
             is OrderCancelledEvent -> {
+                quantityInStock += event.quantity
+            }
+
+            is ProductRestockedEvent -> {
                 quantityInStock += event.quantity
             }
         }

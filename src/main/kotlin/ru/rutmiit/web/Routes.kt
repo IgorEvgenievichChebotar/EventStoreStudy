@@ -14,12 +14,14 @@ import kotlinx.coroutines.flow.toList
 import ru.rutmiit.data.WarehouseRepository
 import ru.rutmiit.event.OrderCancelledEvent
 import ru.rutmiit.event.OrderPlacedEvent
+import ru.rutmiit.event.ProductRestockedEvent
 import ru.rutmiit.service.Projections
 import ru.rutmiit.util.EventStoreCoroutineClient
 import ru.rutmiit.util.EventStoreCoroutineClient.Companion.onlyEvents
 import ru.rutmiit.web.dto.CancelOrderCommand
 import ru.rutmiit.web.dto.PlaceOrderCommand
 import ru.rutmiit.web.dto.ProductDto
+import ru.rutmiit.web.dto.RestockProductCommand
 import java.util.*
 
 fun Route.orderRoutes(
@@ -65,13 +67,27 @@ fun Route.orderRoutes(
             )
             call.respond(HttpStatusCode.OK, "Order cancelled successfully.")
         }
+        post("/restock") {
+            val command = call.receive<RestockProductCommand>()
+            val productRestockedEvent = ProductRestockedEvent(command.productId, command.quantity)
+            val eventData = EventData.builderAsJson(
+                productRestockedEvent.eventId,
+                productRestockedEvent::class.simpleName,
+                objectMapper.writeValueAsBytes(productRestockedEvent),
+            ).build()
+            client.appendToStream(
+                stream = "product-${command.productId}",
+                options = AppendToStreamOptions.get().expectedRevision(ExpectedRevision.any()),
+                eventData
+            )
+            call.respond(HttpStatusCode.OK, "Product restocked successfully.")
+        }
     }
 }
 
 fun Route.productRoutes(
     client: EventStoreCoroutineClient,
     repository: WarehouseRepository,
-    objectMapper: ObjectMapper,
 ) {
     route("/products") {
         get {

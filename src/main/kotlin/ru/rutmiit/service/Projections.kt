@@ -10,6 +10,7 @@ import ru.rutmiit.data.Product
 import ru.rutmiit.data.WarehouseRepository
 import ru.rutmiit.event.OrderCancelledEvent
 import ru.rutmiit.event.OrderPlacedEvent
+import ru.rutmiit.event.ProductRestockedEvent
 import ru.rutmiit.util.EventStoreCoroutineClient
 import ru.rutmiit.util.EventStoreCoroutineClient.Companion.onlyEvents
 import java.util.*
@@ -33,6 +34,7 @@ class Projections(
                 when (it.event.eventType) {
                     OrderPlacedEvent::class.simpleName -> objectMapper.readValue<OrderPlacedEvent>(eventData)
                     OrderCancelledEvent::class.simpleName -> objectMapper.readValue<OrderCancelledEvent>(eventData)
+                    ProductRestockedEvent::class.simpleName -> objectMapper.readValue<ProductRestockedEvent>(eventData)
                     else -> error("Unexpected event type: ${it.event.eventType}")
                 }
             }

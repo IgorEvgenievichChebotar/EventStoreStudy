@@ -62,7 +62,7 @@ fun Application.configureRouting() {
 
     routing {
         orderRoutes(client, projections, mapper)
-        productRoutes(client, repository, mapper)
+        productRoutes(client, repository)
     }
 }
 
