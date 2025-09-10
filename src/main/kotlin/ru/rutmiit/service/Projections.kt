@@ -5,7 +5,7 @@ import com.eventstore.dbclient.StreamNotFoundException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.map
 import ru.rutmiit.data.Product
 import ru.rutmiit.data.WarehouseRepository
 import ru.rutmiit.event.OrderPlacedEvent
@@ -23,21 +23,21 @@ class Projections(
     suspend fun getProductProjection(productId: UUID): Product? {
         val product = repository.findById(productId) ?: return null
 
-        try {
-            val events = client.readStreamFlow(
+        val events = try {
+            client.readStreamFlow(
                 stream = "product-$productId",
                 options = ReadStreamOptions.get().fromStart().forwards()
             ).onlyEvents()
-
-            events.mapNotNull {
-                val eventData = it.event.eventData
-                objectMapper.readValue<OrderPlacedEvent>(eventData)
-            }.collect { event ->
-                product.apply(event)
-            }
         } catch (e: StreamNotFoundException) {
             logger.error(e) { "Ошибка получения проекции" }
             return product
+        }
+
+        events.map {
+            val eventData = it.event.eventData
+            objectMapper.readValue<OrderPlacedEvent>(eventData)
+        }.collect { event ->
+            product.apply(event)
         }
 
         return product
