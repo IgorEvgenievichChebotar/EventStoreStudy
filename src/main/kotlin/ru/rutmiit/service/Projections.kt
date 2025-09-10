@@ -27,16 +27,16 @@ class Projections(
             client.readStreamFlow(
                 stream = "product-$productId",
                 options = ReadStreamOptions.get().fromStart().forwards()
-            ).onlyEvents()
+            ).onlyEvents().map {
+                val eventData = it.event.eventData
+                objectMapper.readValue<OrderPlacedEvent>(eventData)
+            }
         } catch (e: StreamNotFoundException) {
-            logger.error(e) { "Ошибка получения проекции" }
+            logger.error(e) { "Ошибка получения событий для продукта" }
             return product
         }
 
-        events.map {
-            val eventData = it.event.eventData
-            objectMapper.readValue<OrderPlacedEvent>(eventData)
-        }.collect { event ->
+        events.collect { event ->
             product.apply(event)
         }
 
