@@ -1,0 +1,14 @@
+### Get all products
+GET http://localhost:8080/products
+
+### Place an order
+POST http://localhost:8080/orders
+Content-Type: application/json
+
+{
+  "productId": "c3d4b7e4-9e6a-4b1e-8b0a-2e9d8c4f6a2d",
+  "quantity": 1
+}
+
+### Get product events
+GET http://localhost:8080/products/c3d4b7e4-9e6a-4b1e-8b0a-2e9d8c4f6a2d/events

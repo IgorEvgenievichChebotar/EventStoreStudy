@@ -10,7 +10,7 @@ import org.springframework.r2dbc.core.flow
 import ru.rutmiit.data.Product
 import java.util.UUID
 
-class WarehouseRepository(private val connectionFactory: ConnectionFactory) {
+class WarehouseRepository(connectionFactory: ConnectionFactory) {
     private val client: DatabaseClient = DatabaseClient.create(connectionFactory)
 
     suspend fun findById(id: UUID): Product? {
@@ -18,8 +18,8 @@ class WarehouseRepository(private val connectionFactory: ConnectionFactory) {
             .bind("id", id)
             .map { row ->
                 Product(
-                    id = row.get("id", UUID::class.java)!!,
-                    quantityInStock = row.get("quantity_in_stock", Integer::class.java)!!.toInt()
+                    id = row["id"] as UUID,
+                    quantityInStock = row["quantity_in_stock"] as Int
                 )
             }
             .one()
@@ -30,8 +30,8 @@ class WarehouseRepository(private val connectionFactory: ConnectionFactory) {
         return client.sql("SELECT * FROM products")
             .map { row ->
                 Product(
-                    id = row.get("id", UUID::class.java)!!,
-                    quantityInStock = row.get("quantity_in_stock", Integer::class.java)!!.toInt()
+                    id = row["id"] as UUID,
+                    quantityInStock = row["quantity_in_stock"] as Int
                 )
             }
             .flow()

@@ -36,11 +36,9 @@ fun Application.module() {
     configureRouting()
 
     monitor.subscribe(ApplicationStarted) {
-        logger.info {
-            "Приложение запущено на ${
-                environment.config.propertyOrNull("ktor.deployment.host")?.getString()
-            }:${environment.config.propertyOrNull("ktor.deployment.port")?.getString()}"
-        }
+        val host = environment.config.propertyOrNull("ktor.deployment.host")?.getString()
+        val port = environment.config.propertyOrNull("ktor.deployment.port")?.getString()
+        logger.info { "Приложение запущено на $host:$port" }
     }
     monitor.subscribe(ApplicationStopped) {
         logger.info { "Приложение остановлено" }
