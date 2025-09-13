@@ -14,7 +14,6 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.routing.*
 import io.r2dbc.spi.ConnectionFactories
 import io.r2dbc.spi.ConnectionFactoryOptions
-import kotlinx.coroutines.runBlocking
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
 import org.koin.ktor.plugin.Koin
@@ -100,14 +99,12 @@ fun Application.configureDI() = install(Koin) {
                 .option(ConnectionFactoryOptions.PASSWORD, cfg.property("app.db.password").getString())
                 .build()
             val connectionFactory = ConnectionFactories.get(options)
-            DatabaseClient.create(connectionFactory).also {
-                val migrate = { runBlocking { DbUtils(it).migrate() } }
-                val seed = { runBlocking { DbUtils(it).seed() } }
+            DatabaseClient.create(connectionFactory).also { client ->
                 if (cfg.propertyOrNull("app.db.migrate")?.getString()?.toBooleanStrictOrNull() ?: false) {
-                    migrate()
+                    DbUtils.migrate(client)
                 }
                 if (cfg.propertyOrNull("app.db.seed")?.getString()?.toBooleanStrictOrNull() ?: false) {
-                    seed()
+                    DbUtils.seed(client)
                 }
             }
         }
