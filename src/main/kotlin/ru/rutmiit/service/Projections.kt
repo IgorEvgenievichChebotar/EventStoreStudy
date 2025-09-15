@@ -9,7 +9,7 @@ import ru.rutmiit.data.Product
 import ru.rutmiit.data.WarehouseRepository
 import ru.rutmiit.event.EventRegistry
 import ru.rutmiit.util.EventStoreCoroutineClient
-import ru.rutmiit.util.EventStoreCoroutineClient.Companion.onlyEvents
+import ru.rutmiit.util.EventStoreCoroutineClient.Companion.mapEvents
 import java.util.*
 
 class Projections(
@@ -29,7 +29,7 @@ class Projections(
             client.readStreamFlow(
                 stream = "product-$productId",
                 options = ReadStreamOptions.get().fromStart().forwards()
-            ).onlyEvents().map {
+            ).mapEvents().map {
                 val eventData = it.event.eventData
                 val eventClass = EventRegistry.getEventClass(it.event.eventType)
                 objectMapper.readValue(eventData, eventClass)

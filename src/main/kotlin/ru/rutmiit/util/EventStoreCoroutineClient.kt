@@ -103,15 +103,6 @@ class EventStoreCoroutineClient(private val client: EventStoreDBClient) {
                 // если отмена по ошибке — закрываем flow с причиной
                 if (exception != null) close(exception) else close()
             }
-
-            override fun onConfirmation(subscription: Subscription) { /* опционально: emit сигнал состояния */
-            }
-
-            override fun onCaughtUp(subscription: Subscription) { /* опционально */
-            }
-
-            override fun onFellBehind(subscription: Subscription) { /* опционально */
-            }
         }
 
         val subFuture: CompletableFuture<Subscription> =
@@ -141,10 +132,6 @@ class EventStoreCoroutineClient(private val client: EventStoreDBClient) {
             override fun onCancelled(subscription: Subscription, exception: Throwable?) {
                 if (exception != null) close(exception) else close()
             }
-
-            override fun onConfirmation(subscription: Subscription) {}
-            override fun onCaughtUp(subscription: Subscription) {}
-            override fun onFellBehind(subscription: Subscription) {}
         }
 
         val subFuture: CompletableFuture<Subscription> =
@@ -159,10 +146,10 @@ class EventStoreCoroutineClient(private val client: EventStoreDBClient) {
 
     companion object {
         /** Утилита: оставить только события. */
-        fun Flow<ReadMessage>.onlyEvents(): Flow<ResolvedEvent> =
+        fun Flow<ReadMessage>.mapEvents(): Flow<ResolvedEvent> =
             mapNotNull { if (it.hasEvent()) it.event else null }
+
+        /** Удобный extension, чтобы быстро получить корутинный фасад. */
+        fun EventStoreDBClient.asCoroutines(): EventStoreCoroutineClient = EventStoreCoroutineClient(this)
     }
 }
-
-/** Удобный extension, чтобы быстро получить корутинный фасад. */
-fun EventStoreDBClient.asCoroutines(): EventStoreCoroutineClient = EventStoreCoroutineClient(this)
