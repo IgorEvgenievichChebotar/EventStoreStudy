@@ -1,11 +1,4 @@
-plugins {
-    kotlin("jvm") version "2.2.0"
-}
-
-group = "ru.rutmiit"
-version = "1.0-SNAPSHOT"
-
-// Версии зависимостей
+val kotlinVersion = "2.2.0"
 val kafkaVersion = "4.0.0"
 val ktorVersion = "3.1.2"
 val coroutinesVersion = "1.10.2"
@@ -20,7 +13,14 @@ val r2dbcProxyVersion = "1.1.5.RELEASE"
 val springWebfluxVersion = "6.2.6"
 val dotenvVersion = "6.5.1"
 val eventStoreVersion = "5.4.5"
-val jacksonModuleKotlinVersion = "2.2.0"
+
+plugins {
+    /** [kotlinVersion] **/
+    kotlin("jvm") version "2.2.0"
+}
+
+group = "ru.rutmiit"
+version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -46,15 +46,15 @@ dependencies {
     // Jackson
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$kotlinVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 
     // Database - R2DBC
-    implementation("io.r2dbc:r2dbc-pool:${r2dbcPoolVersion}")
-    implementation("io.r2dbc:r2dbc-proxy:${r2dbcProxyVersion}")
-    implementation("org.postgresql:r2dbc-postgresql:${r2dbcPostgresqlVersion}")
-    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc:${springR2dbcVersion}")
-    implementation("org.springframework:spring-webflux:${springWebfluxVersion}")
+    implementation("io.r2dbc:r2dbc-pool:$r2dbcPoolVersion")
+    implementation("io.r2dbc:r2dbc-proxy:$r2dbcProxyVersion")
+    implementation("org.postgresql:r2dbc-postgresql:$r2dbcPostgresqlVersion")
+    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc:$springR2dbcVersion")
+    implementation("org.springframework:spring-webflux:$springWebfluxVersion")
 
     // Koin DI
     implementation("io.insert-koin:koin-core:$koinVersion")
@@ -66,6 +66,8 @@ dependencies {
 
     // Testing
     testImplementation(kotlin("test"))
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:${kotlinVersion}")
 }
 
 tasks.test {
