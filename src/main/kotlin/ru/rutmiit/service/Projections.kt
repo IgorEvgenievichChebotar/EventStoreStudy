@@ -25,21 +25,21 @@ class Projections(
         // 3. после успешной записи порции событий.
         val product = repository.findById(productId) ?: return null
 
-        val events = try {
+        val productFlow = try {
             client.readStreamFlow(
                 stream = "product-$productId",
                 options = ReadStreamOptions.get().fromStart().forwards()
-            ).mapEvents().map {
-                val eventData = it.event.eventData
-                val eventClass = EventRegistry.getEventClass(it.event.eventType)
-                objectMapper.readValue(eventData, eventClass)
-            }
+            )
         } catch (e: StreamNotFoundException) {
-            logger.error(e) { "Ошибка получения событий для продукта" }
+            logger.error(e) { "Ошибка получения событий для продукта: поток не найден" }
             return product
         }
 
-        events.collect { event ->
+        productFlow.mapEvents().map {
+            val eventData = it.event.eventData
+            val eventClass = EventRegistry.getEventClass(it.event.eventType)
+            objectMapper.readValue(eventData, eventClass)
+        }.collect { event ->
             product.apply(event)
         }
 
